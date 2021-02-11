@@ -33,7 +33,7 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	var addr string = ":8180"
+	var addr string = ":80"
 	handler := http.HandlerFunc(HelloServer)
 
 	log.Printf("Starting webserver on %s", addr)
