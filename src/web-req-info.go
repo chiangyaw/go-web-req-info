@@ -13,7 +13,7 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 	var user_agent string = r.Header.Get("User-Agent")
 	var requester_ip string = r.RemoteAddr
 	var xff string = r.Header.Get("X-Forwarded-For")
-	var query string = r.RawQuery
+	var query string = r.URL.RawQuery
 
 	fmt.Fprintf(w, "You requested to:\n%s\n\n", r.Method)
 	fmt.Fprintf(w, "Your requested URL is:\n%s%s\n\n", r.Host, r.URL.Path)
