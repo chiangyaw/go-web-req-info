@@ -13,9 +13,15 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 	var user_agent string = r.Header.Get("User-Agent")
 	var requester_ip string = r.RemoteAddr
 	var xff string = r.Header.Get("X-Forwarded-For")
+	var query string = r.RawQuery
 
 	fmt.Fprintf(w, "You requested to:\n%s\n\n", r.Method)
 	fmt.Fprintf(w, "Your requested URL is:\n%s%s\n\n", r.Host, r.URL.Path)
+
+	if len(query) > 0 {
+		fmt.Fprintf(w, "Query in your request:\n%s\n\n", query)
+	}
+
 	fmt.Fprintf(w, "You request is from this IP address:\n%s\n\n", requester_ip)
 	if len(xff) > 0 {
 		fmt.Fprintf(w, "Your request is going through the following IP addresses:\n")
@@ -33,7 +39,7 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	var addr string = ":8180"
+	var addr string = ":80"
 	handler := http.HandlerFunc(HelloServer)
 
 	log.Printf("Starting webserver on %s", addr)
