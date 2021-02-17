@@ -11,6 +11,7 @@ import (
 func HelloServer(w http.ResponseWriter, r *http.Request) {
 
 	var user_agent string = r.Header.Get("User-Agent")
+	var cookies string = r.Header.Get("Cookie")
 	var requester_ip string = r.RemoteAddr
 	var xff string = r.Header.Get("X-Forwarded-For")
 	var query string = r.URL.RawQuery
@@ -30,6 +31,9 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "%s\n", ip)
 		}
 		fmt.Fprintf(w, "\n")
+	}
+	if len(cookies) > 0 {
+		fmt.Fprintf(w, "Your Cookies are:\n%s\n\n", cookies)
 	}
 	if len(user_agent) > 0 {
 		fmt.Fprintf(w, "Your User-Agent is:\n%s\n", user_agent)
