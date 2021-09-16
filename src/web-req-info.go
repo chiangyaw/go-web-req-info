@@ -7,8 +7,10 @@ import (
 	"net/http"
 )
 
-// HelloServer responds to requests with the given URL path.
-func HelloServer(w http.ResponseWriter, r *http.Request) {
+var visit_count int = 0
+
+// Server to return info seen in the HTTP request
+func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 	var user_agent string = r.Header.Get("User-Agent")
 	var cookies string = r.Header.Get("Cookie")
@@ -16,6 +18,10 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 	var xff string = r.Header.Get("X-Forwarded-For")
 	var xfh string = r.Header.Get("X-Forwarded-Host")
 	var query string = r.URL.RawQuery
+
+	visit_count += 1
+	fmt.Fprintf(w, "You are visitor number %d", visit_count)
+	fmt.Fprintf(w, " since last restart\n\n")
 
 	fmt.Fprintf(w, "You requested to:\n%s\n\n", r.Method)
 
@@ -29,13 +35,20 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Query in your request:\n%s\n\n", query)
 	}
 
-	fmt.Fprintf(w, "You request is from this IP address:\n%s\n\n", requester_ip)
+	fmt.Fprintf(w, "Your request is from this IP address:\n%s\n\n", requester_ip)
 
 	if len(xff) > 0 {
-		fmt.Fprintf(w, "Your request is going through the following IP addresses:\n")
 		ips := strings.Split(xff, ", ")
-		for _, ip := range ips {
-			fmt.Fprintf(w, "%s\n", ip)
+		for i, ip := range ips {
+			if i == 0 {
+				fmt.Fprintf(w, "Your original IP address is:\n")
+				fmt.Fprintf(w, "%s\n", ip)
+			} else if i == 1 {
+				fmt.Fprintf(w, "Your request is going through the following IP addresses:\n")
+				fmt.Fprintf(w, "%s\n", ip)
+			} else {
+				fmt.Fprintf(w, "%s\n", ip)
+			}
 		}
 		fmt.Fprintf(w, "\n")
 	}
@@ -54,7 +67,7 @@ func HelloServer(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	var addr string = ":80"
-	handler := http.HandlerFunc(HelloServer)
+	handler := http.HandlerFunc(WebInfoServer)
 
 	log.Printf("Starting webserver on %s", addr)
 	if err := http.ListenAndServe(addr, handler); err != nil {
