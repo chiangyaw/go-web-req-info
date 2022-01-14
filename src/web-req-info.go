@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 var visit_count int = 0
@@ -18,6 +19,13 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	var xff string = r.Header.Get("X-Forwarded-For")
 	var xfh string = r.Header.Get("X-Forwarded-Host")
 	var query string = r.URL.RawQuery
+	var query_exists bool = false
+	var show_req_header bool = false
+
+	if len(query) > 0 {
+		query_exists = true
+		show_req_header, _ = strconv.ParseBool(r.URL.Query().Get("req_hdr"))
+	}
 
 	visit_count += 1
 	fmt.Fprintf(w, "You are visitor number %d", visit_count)
@@ -31,7 +39,7 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "Your requested URL is:\n%s%s\n\n", r.Host, r.URL.Path)
 
-	if len(query) > 0 {
+	if query_exists {
 		fmt.Fprintf(w, "Query in your request:\n%s\n\n", query)
 	}
 
@@ -58,7 +66,17 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(user_agent) > 0 {
-		fmt.Fprintf(w, "Your User-Agent is:\n%s\n", user_agent)
+		fmt.Fprintf(w, "Your User-Agent is:\n%s\n\n", user_agent)
+	}
+
+	if show_req_header {
+		fmt.Fprintf(w, "The full request header is:\n")
+		for key, value := range r.Header {
+			for _, element := range value {
+				fmt.Fprintf(w, "%s: %s\n", key, element)
+			}
+		}
+		fmt.Fprintf(w, "\n")
 	}
 
 	log.Printf("Received request from %s for path: %s from %s", requester_ip, r.URL.Path, user_agent)
