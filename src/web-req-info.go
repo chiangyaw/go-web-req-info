@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var visit_count int = 0
@@ -22,10 +23,13 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	var query_exists bool = false
 	var show_req_header bool = false
 
-	// check whether req_hdr API is called
+	// check whether req_hdr or sleep API is called
 	if len(query) > 0 {
 		query_exists = true
 		show_req_header, _ = strconv.ParseBool(r.URL.Query().Get("req_hdr"))
+		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
+			time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
+		}
 	}
 
 	// show IP address of the client only if the requested URL is "/"
