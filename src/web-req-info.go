@@ -22,16 +22,21 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	var query string = r.URL.RawQuery
 	var query_exists bool = false
 	var show_req_header bool = false
+	var i int64 = 0
+
+	// show basic info in log
+	log.Printf("Received request from %s for path: %s from %s", requester_ip_port, r.URL.Path, user_agent)
 
 	// check whether req_hdr or sleep API is called
 	if len(query) > 0 {
 		query_exists = true
 		show_req_header, _ = strconv.ParseBool(r.URL.Query().Get("req_hdr"))
 		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
+			log.Printf("Sleeping for %v ms", sleep_duration_ms)
 			time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
 		}
 		if load_duration_ms, err := strconv.Atoi(r.URL.Query().Get("load")); err == nil {
-			var i int
+			log.Printf("Consuming CPU for %v ms", load_duration_ms)
 			for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
 				i++
 			}
@@ -112,9 +117,6 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprintf(w, "\n")
 	}
-
-	// show basic info in log
-	log.Printf("Received request from %s for path: %s from %s", requester_ip_port, r.URL.Path, user_agent)
 }
 
 func main() {
