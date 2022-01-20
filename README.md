@@ -2,8 +2,8 @@ This is a simple web server that accepts web requests and returns useful informa
 
 1. IP address of the client making web requst
 
-$ curl 127.0.0.1
-127.0.0.1
+`$ curl 127.0.0.1
+127.0.0.1`
 
 
 2. Useful information in the HTTP header of the web request received
