@@ -30,6 +30,12 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
 			time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
 		}
+		if load_duration_ms, err := strconv.Atoi(r.URL.Query().Get("load")); err == nil {
+			var i int
+			for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
+				i++
+			}
+		}
 	}
 
 	// show IP address of the client only if the requested URL is "/"
