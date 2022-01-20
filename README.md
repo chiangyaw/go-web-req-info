@@ -67,8 +67,8 @@ Accept: */*
 
 4. Simulate load and process time on the web service
 
-sleep=500 means the web service will pause for 500ms.  No CPU consumption during this period.
-load=500 means the web service will enter a loop for 500ms.  CPU consumption will be high during this period.
+- sleep=500 means the web service will pause for 500ms.  No CPU consumption during this period.
+- load=500 means the web service will enter a loop for 500ms.  CPU consumption will be high during this period.
 
 ```
 $ curl "127.0.0.1:8888/info?sleep=500&load=500"
