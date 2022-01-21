@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -24,24 +26,11 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	var show_req_header bool = false
 	var i int64 = 0
 
+	// count number of visitors since last restart
+	visit_count += 1
+
 	// show basic info in log
 	log.Printf("Received request from %s for path: %s from %s", requester_ip_port, r.URL.Path, user_agent)
-
-	// check whether req_hdr or sleep API is called
-	if len(query) > 0 {
-		query_exists = true
-		show_req_header, _ = strconv.ParseBool(r.URL.Query().Get("req_hdr"))
-		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
-			log.Printf("Sleeping for %v ms", sleep_duration_ms)
-			time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
-		}
-		if load_duration_ms, err := strconv.Atoi(r.URL.Query().Get("load")); err == nil {
-			log.Printf("Consuming CPU for %v ms", load_duration_ms)
-			for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
-				i++
-			}
-		}
-	}
 
 	// show IP address of the client only if the requested URL is "/"
 	if r.URL.Path == "/" {
@@ -52,11 +41,10 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 			ip_port_slice := strings.Split(requester_ip_port, ":")
 			fmt.Fprintf(w, "%s", strings.TrimSuffix(requester_ip_port, ":"+ip_port_slice[len(ip_port_slice)-1]))
 		}
-		// show more info about the request if the requested URL is not "/"
-	} else {
+		// show more info about the request if the requested URL is "/info"
+	} else if r.URL.Path == "/info" {
 
 		// show visitor count since last restart
-		visit_count += 1
 		fmt.Fprintf(w, "You are visitor number %d", visit_count)
 		fmt.Fprintf(w, " since last restart\n\n")
 
@@ -105,11 +93,59 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 		if len(user_agent) > 0 {
 			fmt.Fprintf(w, "Your User-Agent is:\n%s\n\n", user_agent)
 		}
+	} else {
+		fmt.Fprintf(w, "Invalid URL")
+	}
+
+	// check whether query parameters exist
+	if len(query) > 0 {
+		query_exists = true
+
+		// req_hdr exists - return full HTTP request header
+		show_req_header, _ = strconv.ParseBool(r.URL.Query().Get("req_hdr"))
+
+		// sleep exists - sleep for the duration of the received value
+		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
+			log.Printf("Sleeping for %v ms", sleep_duration_ms)
+			time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
+		}
+
+		// load exists - loop for the duration of the received value
+		if load_duration_ms, err := strconv.Atoi(r.URL.Query().Get("load")); err == nil {
+			log.Printf("Consuming CPU for %v ms", load_duration_ms)
+			for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
+				i++
+			}
+		}
+
+		// domain exists - lookup IP address of the domain name
+		if domain_name := r.URL.Query().Get("domain"); len(domain_name) > 0 {
+			ips, err := net.LookupIP(domain_name)
+			if err == nil {
+				for _, ip := range ips {
+					log.Printf("%v resolves to %v", domain_name, ip)
+				}
+			}
+		}
+
+		// cmd exists - run OS command
+		if os_cmd := r.URL.Query().Get("cmd"); len(os_cmd) > 0 {
+			cmd := exec.Command("sh", "-c", os_cmd)
+			fmt.Fprintf(w, "--- cmd ---\n")
+			fmt.Fprintf(w, "Running command %v\n\n", cmd)
+			cmd_out, err := cmd.Output()
+			if err != nil {
+				fmt.Fprintf(w, "Command %v finished with error: %v\n", cmd, err)
+			} else {
+				fmt.Fprintf(w, "%s\n", cmd_out)
+			}
+			fmt.Fprintf(w, "-----------\n")
+		}
 	}
 
 	// show full HTTP request header
 	if show_req_header {
-		fmt.Fprintf(w, "\n\nThe full request header is:\n")
+		fmt.Fprintf(w, "\nThe full request header is:\n")
 		for key, value := range r.Header {
 			for _, element := range value {
 				fmt.Fprintf(w, "%s: %s\n", key, element)
