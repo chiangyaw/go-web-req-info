@@ -168,16 +168,16 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
-	case "ncat":
+	case "nc":
 		ctx_duration := 60 * time.Second
 		tcp_port := "11111"
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
 
-		cmd_out, err := exec.CommandContext(ctx, "ncat", "-lvp", tcp_port).Output()
+		cmd_out, err := exec.CommandContext(ctx, "nc", "-lvp", tcp_port).Output()
 		if err == nil {
-			fmt.Fprintf(w, "Running command \"ncat -lvp %s\"\n", tcp_port)
+			fmt.Fprintf(w, "Running command \"nc -lvp %s\"\n", tcp_port)
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
