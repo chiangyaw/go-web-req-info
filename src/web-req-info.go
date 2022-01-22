@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -128,18 +129,9 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// cmd exists - run OS command
-		if os_cmd := r.URL.Query().Get("cmd"); len(os_cmd) > 0 {
-			cmd := exec.Command("sh", "-c", os_cmd)
-			fmt.Fprintf(w, "--- cmd ---\n")
-			fmt.Fprintf(w, "Running command %v\n\n", cmd)
-			cmd_out, err := cmd.Output()
-			if err != nil {
-				fmt.Fprintf(w, "Command %v finished with error: %v\n", cmd, err)
-			} else {
-				fmt.Fprintf(w, "%s\n", cmd_out)
-			}
-			fmt.Fprintf(w, "-----------\n")
+		// cmd exists - run specific commands
+		if cmd_opt := r.URL.Query().Get("cmd"); len(cmd_opt) > 0 {
+			run_cmd(w, cmd_opt)
 		}
 	}
 
@@ -152,6 +144,46 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		fmt.Fprintf(w, "\n")
+	}
+}
+
+// run command based on the value of the cmd parameter
+func run_cmd(w http.ResponseWriter, cmd_opt string) {
+
+	fmt.Fprintf(w, "\n===== processing cmd parameter =====\n")
+
+	switch cmd_opt {
+
+	case "cat":
+		cmd_out, err := exec.Command("cat", "/etc/passwd").Output()
+		if err == nil {
+			fmt.Fprintf(w, "Running command \"cat /etc/passwd\"\n")
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		}
+	case "curl":
+		cmd_out, err := exec.Command("curl", "http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf", "-o", "/tmp/malware-sample").Output()
+		if err == nil {
+			fmt.Fprintf(w, "Running command \"curl http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf\"\n")
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+	case "ncat":
+		ctx_duration := 60 * time.Second
+		tcp_port := "11111"
+
+		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
+		defer cancel()
+
+		cmd_out, err := exec.CommandContext(ctx, "ncat", "-lvp", tcp_port).Output()
+		if err == nil {
+			fmt.Fprintf(w, "Running command \"ncat -lvp %s\"\n", tcp_port)
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+	default:
+		fmt.Fprintf(w, "Invalid value: %s\n", cmd_opt)
 	}
 }
 
