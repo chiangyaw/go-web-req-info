@@ -25,7 +25,6 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	var query string = r.URL.RawQuery
 	var query_exists bool = false
 	var show_req_header bool = false
-	var i int64 = 0
 
 	// count number of visitors since last restart
 	visit_count += 1
@@ -107,26 +106,17 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 		// sleep exists - sleep for the duration of the received value
 		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
-			log.Printf("Sleeping for %v ms", sleep_duration_ms)
-			time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
+			delay_response(w, sleep_duration_ms)
 		}
 
 		// load exists - loop for the duration of the received value
 		if load_duration_ms, err := strconv.Atoi(r.URL.Query().Get("load")); err == nil {
-			log.Printf("Consuming CPU for %v ms", load_duration_ms)
-			for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
-				i++
-			}
+			add_load(w, load_duration_ms)
 		}
 
 		// domain exists - lookup IP address of the domain name
 		if domain_name := r.URL.Query().Get("domain"); len(domain_name) > 0 {
-			ips, err := net.LookupIP(domain_name)
-			if err == nil {
-				for _, ip := range ips {
-					log.Printf("%v resolves to %v", domain_name, ip)
-				}
-			}
+			lookup_domain(w, domain_name)
 		}
 
 		// cmd exists - run specific commands
@@ -147,6 +137,35 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// delay reponse to HTTP request by sleeping for a duration specified by the sleep parameter
+func delay_response(w http.ResponseWriter, sleep_duration_ms int) {
+
+	log.Printf("Sleeping for %v ms", sleep_duration_ms)
+	time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
+}
+
+// add load when processing the HTTP request for a duration specified by the load parameter
+func add_load(w http.ResponseWriter, load_duration_ms int) {
+
+	var i int64 = 0
+
+	log.Printf("Consuming CPU for %v ms", load_duration_ms)
+	for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
+		i++
+	}
+}
+
+// lookup domain name based on the value of the domain parameter
+func lookup_domain(w http.ResponseWriter, domain_name string) {
+
+	ips, err := net.LookupIP(domain_name)
+	if err == nil {
+		for _, ip := range ips {
+			log.Printf("%v resolves to %v", domain_name, ip)
+		}
+	}
+}
+
 // run command based on the value of the cmd parameter
 func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
@@ -154,21 +173,26 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 	switch cmd_opt {
 
-	case "cat":
-		cmd_out, err := exec.Command("cat", "/etc/passwd").Output()
-		if err == nil {
-			fmt.Fprintf(w, "Running command \"cat /etc/passwd\"\n")
-			fmt.Fprintf(w, "%s\n", cmd_out)
-		}
-	case "curl":
+	case "download":
+		// run curl command to download sample malware file and trigger unexpected process, DNS and malware event
 		cmd_out, err := exec.Command("curl", "http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf", "-o", "/tmp/malware-sample").Output()
+		fmt.Fprintf(w, "Running command \"curl http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf\"\n")
 		if err == nil {
-			fmt.Fprintf(w, "Running command \"curl http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf\"\n")
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
-	case "nc":
+	case "leak":
+		// run cat /etc/passwd to trigger information leakage event
+		cmd_out, err := exec.Command("cat", "/etc/passwd").Output()
+		fmt.Fprintf(w, "Running command \"cat /etc/passwd\"\n")
+		if err == nil {
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+	case "listen":
+		// run nc command to trigger unexpected listening port event
 		ctx_duration := 60 * time.Second
 		tcp_port := "11111"
 
@@ -176,8 +200,24 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 		defer cancel()
 
 		cmd_out, err := exec.CommandContext(ctx, "nc", "-lvp", tcp_port).Output()
+		fmt.Fprintf(w, "Running command \"nc -lvp %s\"\n", tcp_port)
 		if err == nil {
-			fmt.Fprintf(w, "Running command \"nc -lvp %s\"\n", tcp_port)
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+	case "modified":
+		// touch a binary and run it to trigger modified binary event
+		cmd_out, err := exec.Command("touch", "/bin/ls").Output()
+		fmt.Fprintf(w, "Running command \"touch /bin/ls\"\n")
+		if err == nil {
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+		cmd_out, err = exec.Command("ls").Output()
+		fmt.Fprintf(w, "Running command \"ls\"\n")
+		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
