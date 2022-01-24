@@ -159,7 +159,8 @@ func print_xff_ips(w http.ResponseWriter, xff string) {
 // delay reponse to HTTP request by sleeping for a duration specified by the sleep parameter
 func delay_response(w http.ResponseWriter, sleep_duration_ms int) {
 
-	log.Printf("Sleeping for %v ms", sleep_duration_ms)
+	fmt.Fprintf(w, "\n===== processing sleep parameter =====\n")
+	fmt.Fprintf(w, "Sleeping for %v ms\n", sleep_duration_ms)
 	time.Sleep(time.Duration(sleep_duration_ms) * time.Millisecond)
 }
 
@@ -168,7 +169,8 @@ func add_load(w http.ResponseWriter, load_duration_ms int) {
 
 	var i int64 = 0
 
-	log.Printf("Consuming CPU for %v ms", load_duration_ms)
+	fmt.Fprintf(w, "\n===== processing load parameter =====\n")
+	fmt.Fprintf(w, "Consuming CPU for %v ms\n", load_duration_ms)
 	for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
 		i++
 	}
@@ -178,12 +180,14 @@ func add_load(w http.ResponseWriter, load_duration_ms int) {
 func lookup_domain(w http.ResponseWriter, domain_name string) {
 
 	ips, err := net.LookupIP(domain_name)
+	fmt.Fprintf(w, "\n===== processing domain parameter =====\n")
+	fmt.Fprintf(w, "Looking up domain: %v\n", domain_name)
 	if err == nil {
 		for _, ip := range ips {
-			log.Printf("%v resolves to %v", domain_name, ip)
+			fmt.Fprintf(w, "%v resolves to %v\n", domain_name, ip)
 		}
 	} else {
-		log.Printf("domain lookup error: %v", err)
+		fmt.Fprintf(w, "domain lookup error: %v\n", err)
 	}
 }
 
