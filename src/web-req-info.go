@@ -51,6 +51,11 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 			add_load(w, load_duration_ms)
 		}
 
+		// data exists - return the amount of data specified
+		if return_data_byte, err := strconv.Atoi(r.URL.Query().Get("data")); err == nil {
+			return_http_data(w, return_data_byte)
+		}
+
 		// domain exists - lookup IP address of the domain name
 		if domain_name := r.URL.Query().Get("domain"); len(domain_name) > 0 {
 			lookup_domain(w, domain_name)
@@ -174,6 +179,20 @@ func add_load(w http.ResponseWriter, load_duration_ms int) {
 	for start := time.Now(); time.Since(start) < (time.Duration(load_duration_ms) * time.Millisecond); {
 		i++
 	}
+}
+
+// return the amount of data specified by the data parameter
+func return_http_data(w http.ResponseWriter, return_data_byte int) {
+
+	const a byte = 'a'
+
+	fmt.Fprintf(w, "\n===== processing data parameter =====\n")
+	fmt.Fprintf(w, "Packing %v bytes of data\n", return_data_byte)
+	web_data := make([]byte, return_data_byte)
+	for i := range web_data {
+		web_data[i] = a
+	}
+	fmt.Fprintf(w, "%s\n", string(web_data))
 }
 
 // lookup domain name based on the value of the domain parameter
