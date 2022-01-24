@@ -163,6 +163,8 @@ func lookup_domain(w http.ResponseWriter, domain_name string) {
 		for _, ip := range ips {
 			log.Printf("%v resolves to %v", domain_name, ip)
 		}
+	} else {
+		log.Printf("domain lookup error: %v", err)
 	}
 }
 
@@ -174,7 +176,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 	switch cmd_opt {
 
 	case "download":
-		// run curl command to download sample malware file and trigger unexpected process, DNS and malware event
+		// run curl command to download sample malware file and trigger unexpected process, DNS, file system access and malware event
 		cmd_out, err := exec.Command("curl", "http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf", "-o", "/tmp/malware-sample").Output()
 		fmt.Fprintf(w, "Running command \"curl http://sg.wildfire.paloaltonetworks.com/publicapi/test/elf\"\n")
 		if err == nil {
