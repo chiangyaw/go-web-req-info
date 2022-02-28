@@ -244,7 +244,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 		defer listener.Close()
 
-		// connect to the listen after 5 seconds
+		// connect to the listen after sleep_duration
 		go func() {
 			time.Sleep(time.Duration(sleep_duration) * time.Second)
 
@@ -304,15 +304,15 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 	case "modified":
 		// touch a binary and run it to trigger modified binary event
-		cmd_out, err := exec.Command("touch", "/bin/ls").Output()
-		fmt.Fprintf(w, "Running command \"touch /bin/ls\"\n")
+		cmd_out, err := exec.Command("touch", "/usr/bin/curl").Output()
+		fmt.Fprintf(w, "Running command \"touch /usr/bin/curl\"\n")
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
-		cmd_out, err = exec.Command("ls").Output()
-		fmt.Fprintf(w, "Running command \"ls\"\n")
+		cmd_out, err = exec.Command("curl").Output()
+		fmt.Fprintf(w, "Running command \"curl\"\n")
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
