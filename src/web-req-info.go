@@ -234,7 +234,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 	case "listen":
 		// listen to tcp port 11111 to trigger unexpected listening port event
 
-		var sleep_duration int = 5
+		var sleep_duration int = 10
 
 		listener, err := net.Listen("tcp4", ":11111")
 		if err != nil {
@@ -288,7 +288,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 	case "nc":
 		// run nc command to trigger unexpected listening port event
-		ctx_duration := 60 * time.Second
+		ctx_duration := 10 * time.Second
 		tcp_port := "11111"
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
