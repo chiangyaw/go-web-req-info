@@ -280,7 +280,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 		fmt.Fprintf(w, "Accepted connection from %v\n", conn.RemoteAddr())
 
 		go func(c net.Conn) {
-			//time.Sleep(time.Duration(sleep_duration) * time.Second)
+			time.Sleep(time.Duration(sleep_duration) * time.Second)
 			conn.Close()
 			log.Printf("Closing connection\n")
 		}(conn)
