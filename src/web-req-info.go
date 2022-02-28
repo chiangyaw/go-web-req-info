@@ -17,8 +17,6 @@ var visit_count int = 0
 // Server to return info seen in the HTTP request
 func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
-	var show_req_header bool = false
-
 	// count number of visitors since last restart
 	visit_count += 1
 
@@ -37,9 +35,6 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 	// check whether query parameters exist
 	if len(r.URL.RawQuery) > 0 {
-
-		// req_hdr exists - return full HTTP request header
-		show_req_header, _ = strconv.ParseBool(r.URL.Query().Get("req_hdr"))
 
 		// sleep exists - sleep for the duration of the received value
 		if sleep_duration_ms, err := strconv.Atoi(r.URL.Query().Get("sleep")); err == nil {
@@ -65,18 +60,19 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 		if cmd_opt := r.URL.Query().Get("cmd"); len(cmd_opt) > 0 {
 			run_cmd(w, cmd_opt)
 		}
+
+		// req_hdr exists - return full HTTP request header
+		if show_req_header, _ := strconv.ParseBool(r.URL.Query().Get("req_hdr")); show_req_header {
+			fmt.Fprintf(w, "\nThe full request header is:\n")
+			for key, value := range r.Header {
+				for _, element := range value {
+					fmt.Fprintf(w, "%s: %s\n", key, element)
+				}
+			}
+			fmt.Fprintf(w, "\n")
+		}
 	}
 
-	// show full HTTP request header
-	if show_req_header {
-		fmt.Fprintf(w, "\nThe full request header is:\n")
-		for key, value := range r.Header {
-			for _, element := range value {
-				fmt.Fprintf(w, "%s: %s\n", key, element)
-			}
-		}
-		fmt.Fprintf(w, "\n")
-	}
 }
 
 // print IP address of HTTP request sender
@@ -236,6 +232,61 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 			fmt.Fprintf(w, "%s\n", err)
 		}
 	case "listen":
+		// listen to tcp port 11111 to trigger unexpected listening port event
+
+		var sleep_duration int = 5
+
+		listener, err := net.Listen("tcp4", ":11111")
+		if err != nil {
+			log.Printf("Error listening: %s", err)
+			return
+		}
+
+		defer listener.Close()
+
+		// connect to the listen after 5 seconds
+		go func() {
+			time.Sleep(time.Duration(sleep_duration) * time.Second)
+
+			var d net.Dialer
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+			defer cancel()
+
+			conn, err := d.DialContext(ctx, "tcp", "localhost:11111")
+			if err != nil {
+				log.Printf("Failed to dial: %v", err)
+				return
+			}
+			defer conn.Close()
+
+			if _, err := conn.Write([]byte("Hello, World!")); err != nil {
+				log.Fatal(err)
+			}
+		}()
+
+		// comment out the for loop as no concurrent connection support is required
+		//for {
+		conn, err := listener.Accept()
+		log.Printf("Waiting for connection at %v", listener.Addr())
+		fmt.Fprintf(w, "Waiting for connection at %v\n", listener.Addr())
+
+		defer conn.Close()
+
+		if err != nil {
+			log.Printf("Error accepting: %s", err)
+			return
+		}
+		log.Printf("Accepted connection from %v", conn.RemoteAddr())
+		fmt.Fprintf(w, "Accepted connection from %v\n", conn.RemoteAddr())
+
+		go func(c net.Conn) {
+			//time.Sleep(time.Duration(sleep_duration) * time.Second)
+			conn.Close()
+			log.Printf("Closing connection\n")
+		}(conn)
+		//}
+
+	case "nc":
 		// run nc command to trigger unexpected listening port event
 		ctx_duration := 60 * time.Second
 		tcp_port := "11111"
@@ -250,6 +301,7 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
+
 	case "modified":
 		// touch a binary and run it to trigger modified binary event
 		cmd_out, err := exec.Command("touch", "/bin/ls").Output()
