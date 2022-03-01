@@ -127,3 +127,31 @@ www.google.com resolves to 2607:f8b0:4004:c08::68
 www.google.com resolves to 2607:f8b0:4004:c08::67
 www.google.com resolves to 2607:f8b0:4004:c08::6a
 ```
+
+
+7. Download malware sample from WildFire
+
+```
+$ curl "172.16.0.1/?cmd=download"
+```
+
+
+8. Trigger information leak event
+
+```
+$ curl "172.16.0.1/?cmd=leak"
+```
+
+
+9. Trigger unexpected listening port event
+
+```
+$ curl "172.16.0.1/?cmd=nc"
+```
+
+
+10. Trigger modified binary event
+
+```
+$ curl "172.16.0.1/?cmd=modified"
+```
