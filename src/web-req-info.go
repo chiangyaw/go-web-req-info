@@ -234,11 +234,12 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 	case "listen":
 		// listen to tcp port 11111 to trigger unexpected listening port event
 
-		var sleep_duration int = 30
+		var sleep_duration int = 15
 
 		listener, err := net.Listen("tcp4", ":11111")
 		if err != nil {
-			log.Printf("Error listening: %s", err)
+			log.Printf("Error listening: %s\n", err)
+			fmt.Fprintf(w, "Error listening: %s\n", err)
 			return
 		}
 
@@ -254,13 +255,18 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 			conn, err := d.DialContext(ctx, "tcp", "localhost:11111")
 			if err != nil {
-				log.Printf("Failed to dial: %v", err)
+				log.Printf("Failed to dial: %v\n", err)
+				fmt.Fprintf(w, "Failed to dial: %v\n", err)
 				return
 			}
 			defer conn.Close()
 
-			if _, err := conn.Write([]byte("Hello, World!")); err != nil {
-				log.Fatal(err)
+			time.Sleep(time.Duration(sleep_duration) * time.Second)
+
+			if _, err := conn.Write([]byte("This is a test!")); err != nil {
+				log.Printf("Failed to send data: %v\n", err)
+				fmt.Fprintf(w, "Failed to send data: %v\n", err)
+				return
 			}
 		}()
 
