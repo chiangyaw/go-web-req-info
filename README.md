@@ -93,3 +93,37 @@ Your User-Agent is:
 curl/7.58.0
 ```
 
+
+5. Control the size of the HTTP response
+
+- data=1000 adds 1,000 bytes to the HTTP response
+
+```
+$ curl "172.16.0.1/?data=1000"
+172.17.0.1
+===== processing data parameter =====
+Packing 1000 bytes of data
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+```
+
+
+6. Generate a DNS lookup on the server
+
+- domain=www.google.com triggers the server to make a DNS lookup for www.google.com
+
+```
+$ curl "172.16.0.1/?domain=www.google.com"
+172.17.0.1
+===== processing domain parameter =====
+Looking up domain: www.google.com
+www.google.com resolves to 142.250.31.103
+www.google.com resolves to 142.250.31.147
+www.google.com resolves to 142.250.31.105
+www.google.com resolves to 142.250.31.106
+www.google.com resolves to 142.250.31.99
+www.google.com resolves to 142.250.31.104
+www.google.com resolves to 2607:f8b0:4004:c08::93
+www.google.com resolves to 2607:f8b0:4004:c08::68
+www.google.com resolves to 2607:f8b0:4004:c08::67
+www.google.com resolves to 2607:f8b0:4004:c08::6a
+```
