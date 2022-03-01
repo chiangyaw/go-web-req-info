@@ -272,22 +272,23 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 
 		// comment out the for loop as no concurrent connection support is required
 		//for {
-		log.Printf("Waiting for connection at %v", listener.Addr())
+		log.Printf("Waiting for connection at %v\n", listener.Addr())
 		fmt.Fprintf(w, "Waiting for connection at %v\n", listener.Addr())
 		conn, err := listener.Accept()
 
 		defer conn.Close()
 
 		if err != nil {
-			log.Printf("Error accepting: %s", err)
+			log.Printf("Error accepting: %s\n", err)
+			fmt.Fprintf(w, "Error accepting: %s\n", err)
 			return
 		}
-		log.Printf("Accepted connection from %v", conn.RemoteAddr())
+		log.Printf("Accepted connection from %v\n", conn.RemoteAddr())
 		fmt.Fprintf(w, "Accepted connection from %v\n", conn.RemoteAddr())
 
 		// comment out goroutine as no concurrent connection support is required
 		//go func(c net.Conn) {
-		time.Sleep(time.Duration(sleep_duration) * time.Second)
+		time.Sleep(time.Duration(sleep_duration)*time.Second + 1)
 		conn.Close()
 		log.Printf("Closing connection\n")
 		//}(conn)
