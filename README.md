@@ -1,5 +1,8 @@
 This is a simple web server that accepts web requests and returns useful information for testing purposes.
 
+You can build an image by yourself using the sample Dockerfile in this repo or to pull the image from fefefe8888/go-web-req-info.
+
+
 1. IP address of the client making web requst
 
 ```
