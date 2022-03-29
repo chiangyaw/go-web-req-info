@@ -211,8 +211,6 @@ func lookup_domain(w http.ResponseWriter, domain_name string) {
 // run command based on the value of the cmd parameter
 func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 
-	var requester_ip_port string = r.RemoteAddr
-
 	fmt.Fprintf(w, "\n===== processing cmd parameter =====\n")
 
 	switch cmd_opt {
