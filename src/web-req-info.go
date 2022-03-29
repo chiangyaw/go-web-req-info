@@ -25,7 +25,7 @@ func WebInfoServer(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "/" {
 		// show IP address of the client only if the requested URL is "/"
-		get_sender_ip(w, r)
+		fmt.Fprintf(w, "%s", get_sender_ip(w, r))
 	} else if r.URL.Path == "/info" {
 		// show more info about the request if the requested URL is "/info"
 		print_req_info(w, r)
@@ -83,11 +83,9 @@ func get_sender_ip(w http.ResponseWriter, r *http.Request) string {
 
 	if len(xff) > 0 {
 		ips := strings.Split(xff, ", ")
-		fmt.Fprintf(w, "%s", ips[0])
 		return ips[0]
 	} else {
 		ip_port_slice := strings.Split(requester_ip_port, ":")
-		fmt.Fprintf(w, "%s", strings.TrimSuffix(requester_ip_port, ":"+ip_port_slice[len(ip_port_slice)-1]))
 		return strings.TrimSuffix(requester_ip_port, ":"+ip_port_slice[len(ip_port_slice)-1])
 	}
 }
