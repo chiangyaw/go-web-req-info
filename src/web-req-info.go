@@ -336,6 +336,16 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 			fmt.Fprintf(w, "%s\n", err)
 		}
 
+	case "suid":
+		// execute mount command to trigger suid event
+		cmd_out, err := exec.Command("mount").Output()
+		fmt.Fprintf(w, "Running command \"mount\"\n")
+		if err == nil {
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+
 	case "modified":
 		// touch a binary and run it to trigger modified binary event
 		cmd_out, err := exec.Command("touch", "/usr/bin/curl").Output()
@@ -352,6 +362,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
+
 	default:
 		fmt.Fprintf(w, "Invalid value: %s\n", cmd_opt)
 	}
