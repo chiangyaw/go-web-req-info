@@ -347,7 +347,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		}
 
 	case "modified":
-		// touch a binary and run it to trigger modified binary event
+		// touch a binary and run it to trigger modified binary execution and network connection event
 		cmd_out, err := exec.Command("touch", "/usr/bin/curl").Output()
 		fmt.Fprintf(w, "Running command \"touch /usr/bin/curl\"\n")
 		if err == nil {
@@ -355,7 +355,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
-		cmd_out, err = exec.Command("curl").Output()
+		cmd_out, err = exec.Command("curl", "1.1.1.1").Output()
 		fmt.Fprintf(w, "Running command \"curl\"\n")
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
