@@ -356,7 +356,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 			fmt.Fprintf(w, "%s\n", err)
 		}
 		cmd_out, err = exec.Command("curl", "1.1.1.1").Output()
-		fmt.Fprintf(w, "Running command \"curl\"\n")
+		fmt.Fprintf(w, "Running command \"curl 1.1.1.1\"\n")
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
@@ -370,11 +370,26 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 
 func main() {
 
-	var addr string = ":80"
-	handler := http.HandlerFunc(WebInfoServer)
+	var http_port string = ":80"
+	var https_port string = ":443"
+	http_server := http.HandlerFunc(WebInfoServer)
+	https_server := http.HandlerFunc(WebInfoServer)
 
-	log.Printf("Starting webserver on %s", addr)
-	if err := http.ListenAndServe(addr, handler); err != nil {
-		log.Fatalf("Could not listen on port %s %v", addr, err)
-	}
+	finish := make(chan bool)
+
+	go func() {
+		log.Printf("Starting webserver on %s", http_port)
+		if err := http.ListenAndServe(http_port, http_server); err != nil {
+			log.Fatalf("Could not listen on port %s %v", http_port, err)
+		}
+	}()
+
+	go func() {
+		log.Printf("Starting webserver on %s", https_port)
+		if err := http.ListenAndServeTLS(https_port, "localhost.crt", "localhost.key", https_server); err != nil {
+			log.Fatalf("Could not listen on port %s %v", https_port, err)
+		}
+	}()
+
+	<-finish
 }
