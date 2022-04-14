@@ -312,7 +312,7 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 
 	case "mine":
 		// run xmrig command to trigger crypto mining event
-		ctx_duration := 5 * time.Second
+		ctx_duration := 1 * time.Second
 
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
