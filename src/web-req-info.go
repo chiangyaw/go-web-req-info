@@ -317,8 +317,8 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		ctx, cancel := context.WithTimeout(context.Background(), ctx_duration)
 		defer cancel()
 
-		cmd_out, err := exec.CommandContext(ctx, "xmrig").Output()
-		fmt.Fprintf(w, "Running command \"xmrig\"\n")
+		cmd_out, err := exec.CommandContext(ctx, "/app/xmrig").Output()
+		fmt.Fprintf(w, "Running command \"/app/xmrig\"\n")
 		if err == nil {
 			fmt.Fprintf(w, "%s\n", cmd_out)
 		} else {
