@@ -222,6 +222,15 @@ func run_cmd(w http.ResponseWriter, r *http.Request, cmd_opt string) {
 		} else {
 			fmt.Fprintf(w, "%s\n", err)
 		}
+	case "ls":
+		// run ls -l /tmp to confirm whether the malware sample was downloaded or not
+		cmd_out, err := exec.Command("ls", "-l", "/tmp").Output()
+		fmt.Fprintf(w, "Running command \"ls -l /tmp\"\n")
+		if err == nil {
+			fmt.Fprintf(w, "%s\n", cmd_out)
+		} else {
+			fmt.Fprintf(w, "%s\n", err)
+		}
 	case "leak":
 		// run cat /etc/passwd to trigger information leakage event
 		cmd_out, err := exec.Command("cat", "/etc/passwd").Output()
