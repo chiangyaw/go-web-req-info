@@ -1,0 +1,26 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+permissions: read-all
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag unusual-web:$(date +%s)
+    - name: Download twistcli from Prisma Cloud Console
+      run: |
+           curl --user ${{ secrets.PC_USER }}:${{ secrets.PC_PASSWORD }} --output ./twistcli ${{ secrets.PC_CONSOLE }}/api/v1/util/twistcli
+           chmod a+x ./twistcli
+    - name: Run Prisma Cloud Dynamic Analysis Sandbox
+      run: sudo ./twistcli sandbox --address ${{ secrets.PC_CONSOLE }} --user ${{secrets.PC_USER}} --password ${{secrets.PC_PASSWORD}} --analysis-duration 2m unusual-web:$(date +%s)
+      
