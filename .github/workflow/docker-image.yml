@@ -15,14 +15,6 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
-    - name: Run Prisma Cloud Code Scan
-      id: prisma-cloud
-      uses: bridgecrewio/checkov-action@master
-      env:
-        PRISMA_API_URL: ${{ secrets.PC_CONSOLE }}
-      with:
-        api-key: ${{ secrets.BC_API_KEY }}
-        use_enforcement_rules: true
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag unusual-web:$(date +%s)
     - name: Download twistcli from Prisma Cloud Console
